@@ -1,0 +1,23 @@
+<resources>
+
+    <!-- Base application theme. -->
+    <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
+        <!-- Customize your theme here. -->
+<!--        <item name="android:forceDarkAllowed">false</item>-->
+       <!-- <item name="android:windowBackground">@color/splashscreen_background</item> -->
+        <!-- <item name="android:windowFullscreen">true</item> -->
+        <!-- <item name="android:windowLightStatusBar">true</item> -->
+         <item name="android:windowDisablePreview">true</item>
+         <item name="android:background">#EFEFEF</item> 
+    </style>
+
+ <!-- <style name="Theme.Transparent" parent="android:Theme"> -->
+      <!-- <item name="android:windowIsTranslucent">true</item> -->
+      <!-- <item name="android:windowBackground">@android:color/transparent</item> -->
+      <!-- <item name="android:windowContentOverlay">@null</item> -->
+      <!-- <item name="android:windowNoTitle">true</item> -->
+      <!-- <item name="android:windowIsFloating">true</item> -->
+     <!-- <item name="android:backgroundDimEnabled">false</item> -->
+  <!-- </style> -->
+
+</resources>

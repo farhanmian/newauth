@@ -1,0 +1,48 @@
+include:
+  - template: Auto-DevOps.gitlab-ci.yml
+
+merge-job:
+  script:
+<<<<<<< HEAD
+  # - echo "this is a build job."
+  # script:
+    # - git fetch origin nida
+    # - git checkout main
+    # - git pull origin main
+
+    - git merge nida || echo "Conflicts detected. Resolve them manually."
+    - if [ -n "$(git ls-files -u)" ]; then exit 1; fi
+  rules:
+    - if: '$CI_COMMIT_REF_NAME == "nida"'
+
+=======
+    # - 'which ssh-agent || ( apt-get update -y && apt-get install openssh-client -y )'
+    # - eval $(ssh-agent -s)
+    # - ssh-add <(echo "$GIT_SSH_PRIV_KEY")
+    # - mkdir -p ~/.ssh
+    # - cat gitlab-known-hosts >> ~/.ssh/known_hosts
+  - git merge nida || echo "Conflicts detected. Resolve them manually."
+    - if [ -n "$(git ls-files -u)" ]; then exit 1; fi
+  rules:
+    - if: '$CI_COMMIT_REF_NAME == "nida"'
+>>>>>>> nida
+
+merge-to-stage:
+  only:
+    - main
+  script:
+    # If this is the last job you can stay here, otherwise better clone the repo into a working directory
+    # git clone <URL> <working-directory> && cd <working directory>
+    - git checkout main
+    - git merge nida
+    # - git push origin nida
+
+merge-to-stage-branches:
+  only:
+    # feature branch names that are no WIP anymore>
+    - main
+  script:
+    # <scripts to merge feature into develop>
+    git push -o merge_request.create -o merge_request.target=main -o merge_request.merge_when_pipeline_succeeds
+    # <repeat merge for each stage branch>
+    # <repeat push for each stage branch> 
