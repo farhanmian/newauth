@@ -1,0 +1,165 @@
+image: openjdk:17-jdk
+
+variables:
+  # Define paths
+  ANDROID_COMPILE_SDK: "31"
+  ANDROID_BUILD_TOOLS: "31.0.0"
+  ANDROID_SDK_TOOLS: "8092744"
+  ANDROID_HOME: "/sdk"
+  GRADLE_USER_HOME: "$CI_PROJECT_DIR/android/.gradle"
+  rootDIR: $CI_PROJECT_DIR  # GitLab's predefined variable for the project directory
+  projectDIR: $CI_PROJECT_DIR/android/app  # Assuming 'app' is your subproject directory
+
+image: openjdk:17-jdk
+
+cache:
+  key: ${CI_COMMIT_REF_SLUG}
+  paths:
+    - android/settings.gradle  # Cache the settings.gradle file
+    - node_modules/
+    - android/.gradle/wrapper
+    - android/.gradle/caches
+    - .npm/
+stages:
+  - settings
+  - install
+  - setup
+  - build
+  - test
+
+
+#update settings.gradle
+update-settings-gradle:
+  stage: settings
+  script:
+    - chmod +x ./update_settings.sh  # Ensure the script is executable
+    - ./update_settings.sh  # Run the script to update settings.gradle
+  artifacts:
+    paths:
+      - android/settings.gradle  # Save the updated settings.gradle as an artifact
+  only:
+    - nida  # Adjust this to your target branch
+# Job using Node.js image
+install-and-test:
+  stage: install
+  # tags:
+  #   - macos
+  image: node:21  # Use a Node.js image that includes npm
+  script:
+     # Install Runner
+    - curl --output /usr/local/bin/gitlab-runner "https://s3.dualstack.us-east-1.amazonaws.com/gitlab-runner-downloads/latest/binaries/gitlab-runner-darwin-amd64"
+    - chmod +x /usr/local/bin/gitlab-runner
+
+   
+    - npm install -g react-native-cli
+    # - rm -rf node_modules
+    - rm -f package-lock.json yarn.lock
+    # - npm install @react-native-community/image-editor@latest
+    # - npm install @react-native-community/cli-platform-android
+    - npm install react-native --save --legacy-peer-deps
+    # - rm -rf node_modules
+    - npm cache clean --force
+    - npm install --save --legacy-peer-deps
+    # - npm install @react-native-community/cli-platform-android
+    - npm link
+    # - npm install 
+    - cat node_modules/react-native-cookies/android/build.gradle
+    - cat package.json
+    - ls -l $CI_PROJECT_DIR
+    - cat $CI_PROJECT_DIR/README.md
+    - ls -l node_modules/@react-native-community/  # Check if the CLI script exists
+    # - cat node_modules/@react-native-community/cli-platform-android/native_modules.gradle
+    - react-native -v
+    # - npm install
+    - echo "Replacing 'compile' with 'implementation' in build.gradle"
+    - sed -i 's/compile /implementation /g' node_modules/react-native-cookies/android/build.gradle  # Modify 'compile' to 'implementation'
+    - cat  node_modules/react-native-cookies/android/build.gradle
+    - pwd
+    - git branch
+    - ls
+    - react-native bundle --platform android --dev false --entry-file index.js --bundle-output android/app/src/main/assets/index.android.bundle
+  artifacts:
+    paths:
+      - node_modules/
+
+    # - npm test    
+
+# Job 1: Setup using the Ubuntu image
+setup-environment:
+  stage: setup
+  # tags:
+  #   - macos
+  image: ubuntu:20.04
+  #macos # Ensure this matches the tag of your macOS runner
+  script:
+    - echo "Setting up environment on macos"
+    #- /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+    #- echo 'eval "$(/opt/homebrew/bin/brew shellenv)"' >> ~/.zprofile
+    #- eval "$(/opt/homebrew/bin/brew shellenv)"
+    # brew install git
+    #- brew --version
+    - apt-get update && apt-get install -y wget unzip curl
+    - curl -sL https://deb.nodesource.com/setup_14.x | bash -
+    - apt-get install -y nodejs 
+    - node -v
+    - which node
+    - echo "Environment setup completed."
+
+# Job 2: Build using the Android-specific image
+build-release-apk:
+  stage: build
+  # tags:
+  #   - macos
+  image: jangrewe/gitlab-ci-android
+  script:
+    # - yes | sdkmanager --licenses
+    - apt-get update && apt-get install -y curl
+    - curl -sL https://deb.nodesource.com/setup_14.x | bash -
+    - apt-get install -y nodejs openjdk-17-jdk
+    - npm install -g react-native-cli
+    - npm install react-native --save --legacy-peer-deps
+    - npm cache clean --force
+    - npm install --save --legacy-peer-deps
+    - echo "Replacing 'compile' with 'implementation' in build.gradle"
+    - sed -i 's/compile /implementation /g' node_modules/react-native-cookies/android/build.gradle  # Modify 'compile' to 'implementation'
+    - cat  node_modules/react-native-cookies/android/build.gradle
+    - ls -l node_modules/@react-native-community/
+    # - cat node_modules/@react-native-community/cli-platform-android/native_modules.gradle
+    # - npm install @react-native-community/cli-platform-android
+    - sdkmanager "platforms;android-33" "build-tools;31.0.0" "platform-tools"
+    - pwd
+    - git branch
+    - react-native -v
+    #- react-native run-android
+    # - ls -la node_modules/@react-native-community/cli-platform-android/
+    #!/bin/bash
+    - cd android
+    - ./gradlew --version
+    # - ./gradlew printSdkLocation
+    - cat build.gradle
+    - cat settings.gradle
+    - node -v
+    # - ../node_modules/.bin/react-native config --platform android --verbose
+    #- ./gradlew clean
+    # - ./gradlew app:dependencies
+    #- ./gradlew build
+    - ./gradlew app:assembleRelease --stacktrace
+    - node -v
+    # - ./gradlew clean
+    # - ./gradlew app:assembleRelease
+  dependencies:
+    - setup-environment
+  artifacts:
+    paths:
+      - app/build/outputs/apk/release/app-release.apk
+
+# Job 3: Test using the Ubuntu image
+run-tests:
+  stage: test
+  # tags:
+  #   - macos
+  image: ubuntu:20.04
+  script:
+    - apt-get update && apt-get install -y curl
+    - echo "Running tests..."
+    # Add your test commands here
