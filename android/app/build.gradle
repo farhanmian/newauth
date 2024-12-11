@@ -150,8 +150,8 @@ android {
         applicationId "com.newauth"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 17
-        versionName "17.24"
+        versionCode 19
+        versionName "19.24"
         multiDexEnabled true
         buildConfigField "boolean", "IS_NEW_ARCHITECTURE_ENABLED", isNewArchitectureEnabled().toString()
         packagingOptions {

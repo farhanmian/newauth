@@ -11793,7 +11793,7 @@ export default class ZoomOnClick extends React.PureComponent {
         const resp = await PermissionsAndroid.requestMultiple([
           PermissionsAndroid.PERMISSIONS.READ_CONTACTS,
           // PermissionsAndroid.PERMISSIONS.READ_CALL_LOG,
-          PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
+          // PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
         ]);
 
         PermissionsAndroid.check('android.permission.READ_SMS').then(res => {
@@ -17427,9 +17427,10 @@ export default class ZoomOnClick extends React.PureComponent {
       var ispermission = false;
       try {
         if (Platform.OS === 'android') {
-          const granted = await PermissionsAndroid.request(
-            PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
-          );
+          const granted = await PermissionsAndroid
+            .request
+            // PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
+            ();
           if (granted === PermissionsAndroid.RESULTS.GRANTED) {
             ispermission = true;
             console.log('storage permission granted');
@@ -17669,9 +17670,10 @@ export default class ZoomOnClick extends React.PureComponent {
       var ispermission = false;
       try {
         if (Platform.OS === 'android') {
-          const granted = await PermissionsAndroid.request(
-            PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
-          );
+          const granted = await PermissionsAndroid
+            .request
+            // PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
+            ();
           if (granted === PermissionsAndroid.RESULTS.GRANTED) {
             ispermission = true;
             console.log('storage permission granted');
